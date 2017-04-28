@@ -15,13 +15,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <math.h>
+#include <stdlib.h>
 #include <GL/glew.h>
 #include <gtk/gtk.h>
 
 static void on_realize(GtkGLArea *area);
 static void on_render(GtkGLArea *area, GdkGLContext *conext);
 
-GLuint program;
+GLuint program, num_segments;
 GLuint vao, vbo_triangle;
 GLint attribute_coord2d;
 
@@ -56,6 +58,9 @@ int main(int argc, char *argv[]) {
 
 static void on_realize(GtkGLArea *area) {
 
+	int i;
+	float angle, nextAngle;
+
 	g_print("on_realize\n");
 	
 	gtk_gl_area_make_current(area);
@@ -84,12 +89,46 @@ static void on_realize(GtkGLArea *area) {
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-
+	
+	num_segments = 50;
+	
 	GLfloat triangle_vertices[] = {
-	     0.0,  0.8,
-	    -0.8, -0.8,
-	     0.8, -0.8
+		-0.5f, -0.5f,
+		-0.5f,  0.5f,
+		 0.5f,  0.5f,
+
+		 0.5f,  0.5f,
+		 0.5f, -0.5f,
+		-0.5f, -0.5f
 	};
+
+	/*
+	GLfloat *triangle_vertices;
+	triangle_vertices = malloc(6 * num_segments * sizeof(GLfloat));
+	
+	for(i = 0; i < num_segments; i++) {
+
+		angle = i * 2.0f * M_PI / num_segments;	
+		nextAngle = (i+1) * 2.0f * M_PI / num_segments;
+
+		triangle_vertices[i*6 + 0] = cos(angle);
+		triangle_vertices[i*6 + 1] = sin(angle);
+
+		triangle_vertices[i*6 + 2] = 0.0f;
+		triangle_vertices[i*6 + 3] = 0.0f;
+
+		triangle_vertices[i*6 + 4] = cos(nextAngle);
+		triangle_vertices[i*6 + 5] = sin(nextAngle);
+	
+
+		printf("%.2f, %.2f\n",triangle_vertices[i*6 + 0],triangle_vertices[i*6 + 1]);
+		printf("%.2f, %.2f\n",triangle_vertices[i*6 + 2],triangle_vertices[i*6 + 3]);
+		printf("%.2f, %.2f\n",triangle_vertices[i*6 + 4],triangle_vertices[i*6 + 5]);
+		printf("\n");
+
+	}
+	*/
+
 	glGenBuffers(1, &vbo_triangle);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_triangle);
 	glBufferData(
@@ -190,7 +229,7 @@ static void on_render(GtkGLArea *area, GdkGLContext *conext) {
 	    0
 	);
 
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glDisableVertexAttribArray(attribute_coord2d);
 
 }
