@@ -47,6 +47,9 @@ struct {
 	GLuint vbo;
 	int left_down;
 	int right_down;
+	float width;
+	float height;
+	float dx;
 } paddle;
 
 int init = 0;
@@ -168,14 +171,17 @@ static void on_realize(GtkGLArea *area) {
 	paddle.color[2] = 0.85f;
 	paddle.left_down = 0;
 	paddle.right_down = 0;
+	paddle.width = 60.0f;
+	paddle.height = 8.0f;
+	paddle.dx = 3.0f;
 
 	GLfloat paddle_vertices[] = {
-		-60.0f, -8.0f,
-		-60.0f,  8.0f,
-		 60.0f,  8.0f,
-		 60.0f,  8.0f,
-		 60.0f, -8.0f,
-		-60.0f, -8.0f
+		-paddle.width, -paddle.height,
+		-paddle.width,  paddle.height,
+		 paddle.width,  paddle.height,
+		 paddle.width,  paddle.height,
+		 paddle.width, -paddle.height,
+		-paddle.width, -paddle.height
 	};
 
 	glGenBuffers(1, &paddle.vbo);
@@ -287,6 +293,8 @@ static gboolean on_idle(gpointer data) {
 		return FALSE;
 	}
 	
+	// Advance Ball
+
 	ball.pos[0] += ball.dx;
 	ball.pos[1] += ball.dy; 
 
@@ -306,6 +314,21 @@ static gboolean on_idle(gpointer data) {
 		ball.dy = -ball.dy;
 	}
 
+	// Advance Paddle
+
+	if(paddle.left_down) {
+		paddle.pos[0] -= paddle.dx;
+	}
+	if(paddle.right_down) {
+		paddle.pos[0] += paddle.dx;
+	}
+
+	if(paddle.pos[0] < 0.0f) {
+		paddle.pos[0] = 0.0f;
+	} else if(paddle.pos[0] > WIDTH) {
+		paddle.pos[0] = WIDTH;
+	}
+
 	gtk_widget_queue_draw(glArea);
 
 	return TRUE;
@@ -320,12 +343,26 @@ static gint on_destroy(GtkWidget *widget) {
 
 static gboolean on_keydown(GtkWidget *widget, GdkEventKey *event) {
 
-	printf("%d\n", event->keyval);
+	switch(event->keyval) {
+		case GDK_KEY_Left:
+			paddle.left_down = TRUE;
+		break;
+		case GDK_KEY_Right:
+			paddle.right_down = TRUE;
+		break;
+	}
 
 }
 
 static gboolean on_keyup(GtkWidget *widget, GdkEventKey *event) {
 
-	printf("%d\n", event->keyval);
+	switch(event->keyval) {
+		case GDK_KEY_Left:
+			paddle.left_down = FALSE;
+		break;
+		case GDK_KEY_Right:
+			paddle.right_down = FALSE;
+		break;
+	}
 
 }
